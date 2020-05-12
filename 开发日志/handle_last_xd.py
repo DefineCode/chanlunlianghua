@@ -1,12 +1,12 @@
 	def __check_stable_break(self, price, st, end, dir='down', check_num=3):
 		"""
 		:param price: 价格
-		:param st: 起始点
-		:param end：结束点
+		:param st: 起始点 ,dt
+		:param end：结束点,dt
 		:param check_num: 收盘价连续站稳指定价的数量
 		:param dir:方向，'up' 向上突破站稳, '向下突破站稳'
 		"""
-		tmp_kline = [x for x in self.kline if st['dt'] <= x['dt'] <= end['dt']]
+		tmp_kline = [x for x in self.kline if st <= x['dt'] <= end]
 		count = 0
 		for i in range(len(tmp_kline)):
 			if dir == 'down':
@@ -52,37 +52,38 @@
 				gg = deepcopy(bi_seq[2])
 				print(bi_seq)
 				for i in range(3, len(bi_seq) - 1, 2):
-					# 处理包含关系，低低
-					if bi_seq[i]['bi'] < dd['bi']:
-						dd = deepcopy(bi_seq[i])
-					if bi_seq[i + 1]['bi'] < gg['bi']:
-						gg = deepcopy(bi_seq[i + 1])
 					if i > 3 and bi_seq[i]['bi'] >= dd['bi']:  # 当出现当前笔没有破前低
-						end_bi = bi_seq[i + 1] if i + 2 >= len(bi_seq) else bi_seq[i + 2]
+						end_bi = self.end_dt if i + 2 >= len(bi_seq) else bi_seq[i + 2]['dt']
 						# 再判断是否有效站稳
-						if self.__check_stable_break(gg['bi'], bi_seq[i], end_bi, dir='up'):
+						if self.__check_stable_break(gg['bi'], bi_seq[i]['st'], end_bi, dir='up'):
 							new = deepcopy(dd)
 							new['xd'] = new['bi']
 							del new['bi']
 							bFind = True
 							xd.append(new)
+							break
+					# 处理包含关系，低低
+					dd = deepcopy(bi_seq[i])
+					if bi_seq[i + 1]['bi'] < gg['bi']:
+						gg = deepcopy(bi_seq[i + 1])
 			elif last_xd['fx_mark'] == 'd':  # 上涨趋势，起始点是低
 				gg = deepcopy(bi_seq[1])
 				dd = deepcopy(bi_seq[2])
 				for i in range(3, len(bi_seq) - 1, 2):
-					# 处理包含关系，高高
-					if bi_seq[i]['bi'] > gg['bi']:
-						gg = deepcopy(bi_seq[i])
-					if bi_seq[i + 1]['bi'] > dd['bi']:
-						dd = deepcopy(bi_seq[i + 1])
-					# print("dd = ", dd, " gg = ", gg)
 					if i > 3 and bi_seq[i]['bi'] <= gg['bi']:  # 当出现当前笔没有破前高
-						end_bi = bi_seq[i + 1] if i + 2 >= len(bi_seq) else bi_seq[i + 2]
+						end_bi = self.end_dt if i + 2 >= len(bi_seq) else bi_seq[i + 2]['dt']
 						# 再判断是否有效站稳
-						if self.__check_stable_break(dd['bi'], bi_seq[i], end_bi, dir='down'):
+						if self.__check_stable_break(dd['bi'], bi_seq[i]['st'], end_bi, dir='down'):
 							new = deepcopy(gg)
 							new['xd'] = new['bi']
 							del new['bi']
 							bFind = True
 							xd.append(new)
+							break
+					# 处理包含关系，高高
+					gg = deepcopy(bi_seq[i])
+					if bi_seq[i + 1]['bi'] > dd['bi']:
+						dd = deepcopy(bi_seq[i + 1])
+					# print("dd = ", dd, " gg = ", gg)
+
 		return xd
