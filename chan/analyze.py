@@ -689,6 +689,10 @@ class KlineAnalyze(object):
 						zoushi.append((xd_zs[i - 1]['zs_qujian'][1]['dt'], xd_zs[i]['zs_qujian'][0]['dt']))
 					zoushi.append((xd_zs[-1]['zs_qujian'][1]['dt'], xd_end['dt']))
 					tmp = {'xd_qujian': (xd_st, xd_end), 'total_zs': deepcopy(xd_zs), 'zoushi': deepcopy(zoushi)}
+					#xd_qujian : 有中枢的线段区间，起始点，终止点 xd['dt'],xd['xd'],xd['fx_mark']
+					#total_zs: 所有的中枢 每个中枢 xd_zs
+					# { 'zs':(zs_d, zs_g) 中枢的高低点值 'zs_qujian': (bi[0],bi[-1]) 起始和结束 bi = bi['bi'],bi['dt'],bi['fx_mark']}
+					# zoushi:每个中枢间的走势，一个中枢分两种：进中枢和出中枢
 					k_zs.append(tmp)
 		return k_zs
 
