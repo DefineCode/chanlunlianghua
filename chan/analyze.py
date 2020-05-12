@@ -651,7 +651,7 @@ class KlineAnalyze(object):
 			xd_st = k_xd[i]
 			xd_end = k_xd[i + 1] if i + 1 < len(k_xd) else self.kline[-1]
 			bi_m = [x for x in self.bi if xd_st['dt'] <= x['dt'] <= xd_end['dt']]
-			if len(bi_m) >= 6:
+			if len(bi_m) >= 5:
 				zs_bi = []
 				xd_zs = []
 				j = 1
