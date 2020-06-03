@@ -211,3 +211,30 @@ map_stock_data = get_stock_data_multicycle('000300.XSHG', 200, datetime.datetime
     for unit, stock_data in map_stock_data.items():
         macd = MACD(stock_data, 12, 26, 9)
         macd.show_macd()
+
+def macd(kline):
+	"""计算 MACD 指标
+
+	:param kline: pd.DataFrame
+		K线，columns = ["symbol", "dt", "open", "close", "high", "low", "vol"]
+	:return: pd.DataFrame
+		在原始数据中新增 diff,dea,macd 三列
+	"""
+
+	short_, long_, m = 12, 26, 9
+	kline.loc[:, 'diff'] = kline['close'].ewm(adjust=False, alpha=2 / (short_ + 1), ignore_na=True).mean() - \
+						   kline['close'].ewm(adjust=False, alpha=2 / (long_ + 1), ignore_na=True).mean()
+	kline.loc[:, 'dea'] = kline['diff'].ewm(adjust=False, alpha=2 / (m + 1), ignore_na=True).mean()
+	kline.loc[:, 'macd'] = 2 * (kline['diff'] - kline['dea'])
+
+	kline['macd_cross'] = 0
+	for i in range(kline.shape[0] - 1):
+		singal = 0
+		if kline.at[i + 1, 'diff'] < kline.at[i + 1, 'dea'] and kline.at[i, 'diff'] > kline.at[i, 'dea']:
+			singal = 1
+		elif kline.at[i + 1, 'diff'] > kline.at[i + 1, 'dea'] and kline.at[i, 'diff'] < kline.at[i, 'dea']:
+			singal = -1
+		kline.at[i, 'macd_cross'] = singal
+	for col in ['diff', 'dea', 'macd']:
+		kline.loc[:, col] = kline[col].apply(round, args=(2,))
+	return kline
